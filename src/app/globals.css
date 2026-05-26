@@ -1,26 +1,186 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* -------------------------------- */
+/* Base reset */
+/* -------------------------------- */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: #ffffff;
+  color: #0a0a0a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* -------------------------------- */
+/* Links */
+/* -------------------------------- */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* -------------------------------- */
+/* Navigation underline animation */
+/* -------------------------------- */
+
+/* Flow underline: line opens from middle to both sides */
+.nav-link {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform-origin: 50% 50%;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: opacity 200ms ease, transform 280ms ease-out;
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+
+/* -------------------------------- */
+/* Scroll behavior */
+/* -------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+
+/* -------------------------------- */
+/* Utility helpers */
+/* -------------------------------- */
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Visually hidden but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until focused */
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  z-index: 100;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: #fff;
+  color: #171717;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  outline: none;
+  box-shadow: 0 0 0 2px #171717;
+}
+
+
+/* -------------------------------- */
+/* Page background (home / about)   */
+/* -------------------------------- */
+
+@keyframes bgDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.04);
+  }
+  50% {
+    transform: translate3d(-1.5%, -1%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.04);
+  }
+}
+
+@keyframes caretBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Core user flow step — load one by one */
+@keyframes flowStepIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.flow-step-in {
+  opacity: 0;
+  animation: flowStepIn 0.65s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-step-in {
+    animation: none;
+    opacity: 1;
+  }
 }
