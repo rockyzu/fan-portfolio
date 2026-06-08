@@ -25,7 +25,7 @@ No test suite is configured.
 Create a `.env.local` for local development:
 
 ```
-SITE_PASSWORD=your_password_here
+CASE_STUDY_PASSWORD=your_password_here
 ```
 
 Required for the password-protected case study routes (`/work/olg`, `/work/pfizer`, `/work/intuit-ai`).

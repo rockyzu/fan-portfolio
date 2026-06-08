@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/work/olg", "/work/pfizer", "/work/intuit-ai"];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   const needsAuth = PROTECTED_PREFIXES.some(
