@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PROTECTED_PREFIXES = ["/work/olg", "/work/pfizer", "/work/intuit-ai"];
+const PROTECTED_PREFIXES = ["/work/olg", "/work/pfizer", "/work/intuit-ai", "/work/surplus-calculator"];
 
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -25,5 +25,5 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   // Explicit paths so middleware always runs; /work/:path* can miss on prefetch in some setups
-  matcher: ["/work/olg", "/work/olg/:path*", "/work/pfizer", "/work/pfizer/:path*", "/work/intuit-ai", "/work/intuit-ai/:path*"],
+  matcher: ["/work/olg", "/work/olg/:path*", "/work/pfizer", "/work/pfizer/:path*", "/work/intuit-ai", "/work/intuit-ai/:path*", "/work/surplus-calculator", "/work/surplus-calculator/:path*"],
 };

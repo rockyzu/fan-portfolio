@@ -5,56 +5,51 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 type WorkItem = {
+  number: string;
+  domain: string;
   title: string;
   desc: string;
-  tags: string[];
   href: string;
   locked?: boolean;
   cover?: string;
-  highlights?: string[];
-  problem?: string;
+  comingSoon?: boolean;
 };
 
 
 const WORK: WorkItem[] = [
   {
+    number: "01",
+    domain: "Enterprise Workflow · Tax Platform",
+    title: "Integrating a Specialized Tax Workflow",
+    desc: "Bringing a standalone surplus calculation experience into a unified enterprise tax ecosystem while balancing workflow independence, compliance requirements, and platform consistency.",
+    href: "/work/surplus-calculator",
+    locked: true,
+    cover: "",
+    comingSoon: true,
+  },
+  {
+    number: "02",
+    domain: "Enterprise IA · Governance",
     title: "OLG Corporate Website Redesign",
-    desc: "3,000+ pages organized around the org chart, not user intent. I rebuilt the architecture around what people actually came to do — and made it governable.",
-    highlights: [
-      "Mapped 3,000+ pages to surface structural gaps and ownership conflicts",
-      "Rebuilt navigation around user intent and top tasks, not org hierarchy",
-      "Established governance patterns to keep the structure coherent over time",
-    ],
-    problem: "Navigation was organized around internal teams, not user tasks — content couldn't be found, and content owners couldn't maintain what they'd built.",
-    tags: ["Enterprise IA", "Governance", "Accessibility"],
+    desc: "3,000+ pages organized around the org chart, not user intent. I rebuilt the architecture around what people actually came to do.",
     href: "/work/olg",
     locked: true,
     cover: "/covers/olg.png",
   },
   {
+    number: "03",
+    domain: "Healthcare Learning Platform",
     title: "Pfizer Global Learning Platform",
-    desc: "Healthcare training split across disconnected tools — no single view of progress, no clear compliance picture. I consolidated it into one platform three roles could trust.",
-    highlights: [
-      "Unified fragmented training systems into a single role-based platform",
-      "Designed progress states and certification tracking for 3 distinct roles",
-      "Built scalable IA that supports new programs without redesign",
-    ],
-    problem: "Training lived in three disconnected tools — no shared view of who had completed what, making compliance status unreliable for admins and invisible to learners.",
-    tags: ["B2B SaaS", "Platform UX", "Regulated"],
+    desc: "Healthcare training split across disconnected tools. I consolidated it into one platform — with a shared model for learning, progress, and compliance.",
     href: "/work/pfizer",
     locked: true,
     cover: "/covers/pfizer.png",
   },
   {
+    number: "04",
+    domain: "AI Decision Systems",
     title: "Intuit AI-Assisted Workflows",
-    desc: "Tax software that hands users complex rules and expects them to self-interpret. I designed the AI layer that interprets for them — and shows its reasoning.",
-    highlights: [
-      "Designed AI clarification flows for ambiguous self-employment income",
-      "Built explainability patterns so users understand what the system decided",
-      "Identified $17M/year cost reduction through rapid concept validation",
-    ],
-    problem: "Self-employed users were forced to interpret tax rules they didn't understand — the system asked questions, but gave no reasoning, leaving users to guess.",
-    tags: ["AI UX", "Decision systems", "Trust"],
+    desc: "Tax software that asks users to interpret complex rules. I designed the AI layer that interprets for them — and makes its reasoning visible.",
     href: "/work/intuit-ai",
     locked: true,
     cover: "/covers/intuit.png",
@@ -196,11 +191,19 @@ function SubtleStars() {
   return <canvas ref={canvasRef} className="fixed inset-0 z-[-1]" aria-hidden />;
 }
 
-function Pill({ children }: { children: React.ReactNode }) {
+function CarouselCoverPlaceholder() {
   return (
-    <span className="rounded-full border border-white/20 bg-black/35 px-3 py-1 text-xs text-white/95 backdrop-blur">
-      {children}
-    </span>
+    <div className="absolute inset-0 bg-[#010b1f]">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.10) 1px, transparent 1px)",
+          backgroundSize: "26px 26px",
+        }}
+      />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_38%_55%,rgba(29,78,216,0.26),transparent_62%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_38%,rgba(0,0,0,0.52))]" />
+    </div>
   );
 }
 
@@ -282,13 +285,13 @@ function WorkCarousel({ items }: { items: WorkItem[] }) {
     const el = ref.current;
     if (!el) return;
     const card = el.querySelector<HTMLElement>("[data-card='work']");
-    const amount = card ? Math.floor(card.offsetWidth * 0.8) : 480;
+    const amount = card ? Math.floor(card.offsetWidth * 0.85) : 480;
     el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
   };
 
   return (
     <SectionShell
-      title="Work"
+      title="Selected Work"
       sectionId="work"
       right={
         <>
@@ -303,68 +306,77 @@ function WorkCarousel({ items }: { items: WorkItem[] }) {
             key={w.href}
             href={w.href}
             data-card="work"
-            aria-label={`View project: ${w.title}`}
-            className="group relative snap-start min-w-[86%] sm:min-w-[62%] md:min-w-[520px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 rounded-[28px]"
+            aria-label={w.comingSoon ? `${w.title} — coming soon` : `View project: ${w.title}`}
+            className="group relative snap-start min-w-[86%] sm:min-w-[62%] md:min-w-[500px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 rounded-2xl"
           >
-            <article
-              className="relative h-full overflow-hidden rounded-[28px]
-              border border-white/10 bg-black/40 p-7 backdrop-blur
-              shadow-[0_10px_40px_rgba(0,0,0,0.45)]
-              transition duration-300
-              hover:-translate-y-1 hover:bg-black/50
-              hover:shadow-[0_40px_140px_rgba(20,70,200,0.22)]"
-            >
-              <div className="relative flex items-start justify-between gap-4">
-                <div className="flex flex-wrap gap-2">
-                  {w.tags.slice(0, 3).map((t) => (
-                    <Pill key={t}>{t}</Pill>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 text-white/90">
-                  {w.locked ? <span aria-hidden title="Locked">🔒</span> : null}
-                  <span aria-hidden className="text-lg transition group-hover:translate-x-1">↗</span>
-                </div>
-              </div>
-              <h3 className="relative mt-5 text-xl font-semibold tracking-tight text-white">{w.title}</h3>
-              <p className="relative mt-3 text-sm leading-relaxed text-white/90">{w.desc}</p>
-              {w.problem ? (
-                <div
-                  className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr]"
-                  aria-hidden
-                >
-                  <div className="min-h-0 overflow-hidden">
-                    <div className="mt-4 border-t border-white/10 pt-4">
-                      <div className="text-[10px] font-semibold tracking-[0.16em] text-white/45 uppercase">Problem</div>
-                      <p className="mt-2 text-sm leading-relaxed text-white/85">{w.problem}</p>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-              <div className="relative mt-7 h-[210px] overflow-hidden rounded-2xl border border-white/12 bg-black/30">
+            <article className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#02081c]/70 backdrop-blur shadow-[0_10px_40px_rgba(0,0,0,0.45)] transition-all duration-400 ease-out group-hover:border-white/[0.14] group-hover:shadow-[0_24px_64px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.05)]">
+
+              {/* IMAGE — dominant */}
+              <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
                 {w.cover ? (
-                  <>
-                    <Image
-                      src={w.cover}
-                      alt={w.title}
-                      fill
-                      sizes="(max-width: 640px) 86vw, 520px"
-                      className="object-cover transition duration-500 group-hover:scale-[1.04]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                  </>
+                  <Image
+                    src={w.cover}
+                    alt={w.title}
+                    fill
+                    sizes="(max-width: 640px) 86vw, 500px"
+                    className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.04] group-hover:brightness-[1.09]"
+                  />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs tracking-[0.18em] text-white/70">
-                    ADD PROJECT COVER
-                  </div>
+                  <CarouselCoverPlaceholder />
                 )}
+              </div>
+
+              {/* CONTENT */}
+              <div className="px-6 pb-6 pt-5">
+                {/* Number + Domain */}
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] text-white/25">{w.number}</span>
+                  <span className="text-[11px] text-white/20">/</span>
+                  <span className="text-[11px] font-semibold tracking-[0.13em] text-white/40 uppercase">
+                    {w.domain}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3 className="mt-3 text-[17px] font-semibold leading-snug tracking-tight text-white">
+                  {w.title}
+                </h3>
+
+                {/* Description */}
+                <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/55">
+                  {w.desc}
+                </p>
+
+                {/* CTA */}
+                <div className="mt-5">
+                  {w.comingSoon ? (
+                    <span className="text-[11px] font-semibold tracking-[0.14em] text-white/35 uppercase">
+                      Case Study in Progress
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-[13px] text-white/50 transition-colors duration-200 group-hover:text-white/90">
+                      {w.locked && <span aria-hidden className="text-white/30">🔒</span>}
+                      View Case
+                      <span
+                        aria-hidden
+                        className="inline-block transition-transform duration-200 group-hover:translate-x-1"
+                      >
+                        →
+                      </span>
+                    </span>
+                  )}
+                </div>
               </div>
             </article>
           </Link>
         ))}
       </HorizontalCarousel>
+
       <div className="mt-4 flex gap-2 md:hidden">
-        <ArrowButton dir="left" onClick={() => scrollByAmount("left")} label="Scroll work left (mobile)" />
-        <ArrowButton dir="right" onClick={() => scrollByAmount("right")} label="Scroll work right (mobile)" />
+        <ArrowButton dir="left" onClick={() => scrollByAmount("left")} label="Scroll work left" />
+        <ArrowButton dir="right" onClick={() => scrollByAmount("right")} label="Scroll work right" />
       </div>
     </SectionShell>
   );
