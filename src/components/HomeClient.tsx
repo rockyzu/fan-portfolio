@@ -3,29 +3,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { ProjectCard, type ProjectItem } from "@/components/ProjectCard";
 
-type WorkItem = {
-  number: string;
-  domain: string;
-  title: string;
-  desc: string;
-  href: string;
-  locked?: boolean;
-  cover?: string;
-  comingSoon?: boolean;
-};
-
+type WorkItem = ProjectItem;
 
 const WORK: WorkItem[] = [
   {
     number: "01",
-    domain: "Enterprise Workflow · Tax Platform",
-    title: "Integrating a Specialized Tax Workflow",
-    desc: "Bringing a standalone surplus calculation experience into a unified enterprise tax ecosystem while balancing workflow independence, compliance requirements, and platform consistency.",
-    href: "/work/surplus-calculator",
-    locked: true,
-    cover: "",
-    comingSoon: true,
+    domain: "Enterprise Tax Platform · Selected Work",
+    title: "KPMG — Enterprise Tax Platform Work",
+    desc: "Designing complex workflows and platform experiences across enterprise tax products.",
+    href: "/work/kpmg",
+    cover: "/covers/kpmg.png",
+    ctaLabel: "Explore KPMG work",
   },
   {
     number: "02",
@@ -73,27 +63,42 @@ function clamp01(v: number) {
   return Math.max(0, Math.min(1, v));
 }
 
-type Star = { x: number; y: number; r: number; a: number; tw: number; seed: number; vx: number; vy: number };
+type StarLayer = 0 | 1 | 2;
+type Star = { x: number; y: number; r: number; a: number; tw: number; seed: number; vx: number; vy: number; layer: StarLayer };
+
+const LAYER_CFG = [
+  { twAmp: 0.05, r: 220, g: 232, b: 255, haloMul: 0,    haloScale: 0   }, // distant — tiny, dim, no halo
+  { twAmp: 0.13, r: 235, g: 245, b: 255, haloMul: 0.12, haloScale: 2.2 }, // medium  — varied brightness, soft halo
+  { twAmp: 0.24, r: 248, g: 252, b: 255, haloMul: 0.28, haloScale: 3.2 }, // hero    — bright accent stars, visible glow
+] as const;
 
 function generateStars(): Star[] {
-  const count = 220;
-  return Array.from({ length: count }, () => {
-    const band = Math.random() < 0.55;
-    const x = Math.random();
-    const y = band
-      ? clamp01(0.45 + (Math.random() - 0.5) * 0.22 + (x - 0.5) * 0.1)
-      : Math.random();
-    return {
-      x,
-      y,
-      r: 0.35 + Math.random() * 0.9,
-      a: 0.12 + Math.random() * 0.26,
-      tw: 0.6 + Math.random() * 1.6,
-      seed: Math.random() * 1000,
-      vx: (Math.random() - 0.5) * 0.006,
-      vy: (Math.random() - 0.5) * 0.004,
-    };
-  });
+  const out: Star[] = [];
+  const add = (
+    count: number, layer: StarLayer,
+    rMin: number, rMax: number,
+    aMin: number, aMax: number,
+    heroWeight: number,
+  ) => {
+    for (let i = 0; i < count; i++) {
+      const bias = Math.random() < heroWeight;
+      out.push({
+        x: bias ? 0.15 + Math.random() * 0.70 : Math.random(),
+        y: bias ? Math.random() * 0.50         : Math.random(),
+        r: rMin + Math.random() * (rMax - rMin),
+        a: aMin + Math.random() * (aMax - aMin),
+        tw: 0.3 + Math.random() * 1.8,
+        seed: Math.random() * 1000,
+        vx: (Math.random() - 0.5) * 0.005,
+        vy: (Math.random() - 0.5) * 0.003,
+        layer,
+      });
+    }
+  };
+  add(300, 0, 0.15, 0.55, 0.06, 0.18, 0.30); // distant: many tiny dim stars
+  add(100, 1, 0.45, 1.10, 0.22, 0.44, 0.35); // medium: varied brightness
+  add(25,  2, 0.90, 2.50, 0.50, 0.82, 0.50); // hero: few bright accent stars
+  return out;
 }
 
 function SubtleStars() {
@@ -152,7 +157,8 @@ function SubtleStars() {
       ctx.fillRect(0, 0, w, h);
 
       for (const s of stars) {
-        const tw = reducedMotion ? 0 : Math.sin((now / 1000) * s.tw + s.seed) * 0.08;
+        const cfg = LAYER_CFG[s.layer];
+        const tw = reducedMotion ? 0 : Math.sin((now / 1000) * s.tw + s.seed) * cfg.twAmp;
         const alpha = clamp01(s.a + tw);
 
         if (!reducedMotion) {
@@ -167,15 +173,17 @@ function SubtleStars() {
         const x = s.x * w;
         const y = s.y * h;
 
-        ctx.fillStyle = `rgba(235,245,255,${alpha})`;
+        ctx.fillStyle = `rgba(${cfg.r},${cfg.g},${cfg.b},${alpha})`;
         ctx.beginPath();
         ctx.arc(x, y, s.r, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = `rgba(120,185,255,${alpha * 0.1})`;
-        ctx.beginPath();
-        ctx.arc(x, y, s.r * 2.1, 0, Math.PI * 2);
-        ctx.fill();
+        if (cfg.haloMul > 0) {
+          ctx.fillStyle = `rgba(120,185,255,${alpha * cfg.haloMul})`;
+          ctx.beginPath();
+          ctx.arc(x, y, s.r * cfg.haloScale, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       raf = requestAnimationFrame(draw);
@@ -191,21 +199,6 @@ function SubtleStars() {
   return <canvas ref={canvasRef} className="fixed inset-0 z-[-1]" aria-hidden />;
 }
 
-function CarouselCoverPlaceholder() {
-  return (
-    <div className="absolute inset-0 bg-[#010b1f]">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.10) 1px, transparent 1px)",
-          backgroundSize: "26px 26px",
-        }}
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_38%_55%,rgba(29,78,216,0.26),transparent_62%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_38%,rgba(0,0,0,0.52))]" />
-    </div>
-  );
-}
 
 function ArrowButton({
   dir,
@@ -302,75 +295,13 @@ function WorkCarousel({ items }: { items: WorkItem[] }) {
     >
       <HorizontalCarousel scrollRef={ref} ariaLabel="Work projects">
         {items.map((w) => (
-          <Link
+          <ProjectCard
             key={w.href}
-            href={w.href}
-            data-card="work"
-            aria-label={w.comingSoon ? `${w.title} — coming soon` : `View project: ${w.title}`}
-            className="group relative snap-start min-w-[86%] sm:min-w-[62%] md:min-w-[500px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 rounded-2xl"
-          >
-            <article className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#02081c]/70 backdrop-blur shadow-[0_10px_40px_rgba(0,0,0,0.45)] transition-all duration-400 ease-out group-hover:border-white/[0.14] group-hover:shadow-[0_24px_64px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.05)]">
-
-              {/* IMAGE — dominant */}
-              <div className="relative aspect-[16/10] overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-
-                {w.cover ? (
-                  <Image
-                    src={w.cover}
-                    alt={w.title}
-                    fill
-                    sizes="(max-width: 640px) 86vw, 500px"
-                    className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.04] group-hover:brightness-[1.09]"
-                  />
-                ) : (
-                  <CarouselCoverPlaceholder />
-                )}
-              </div>
-
-              {/* CONTENT */}
-              <div className="px-6 pb-6 pt-5">
-                {/* Number + Domain */}
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-white/25">{w.number}</span>
-                  <span className="text-[11px] text-white/20">/</span>
-                  <span className="text-[11px] font-semibold tracking-[0.13em] text-white/40 uppercase">
-                    {w.domain}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h3 className="mt-3 text-[17px] font-semibold leading-snug tracking-tight text-white">
-                  {w.title}
-                </h3>
-
-                {/* Description */}
-                <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/55">
-                  {w.desc}
-                </p>
-
-                {/* CTA */}
-                <div className="mt-5">
-                  {w.comingSoon ? (
-                    <span className="text-[11px] font-semibold tracking-[0.14em] text-white/35 uppercase">
-                      Case Study in Progress
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 text-[13px] text-white/50 transition-colors duration-200 group-hover:text-white/90">
-                      {w.locked && <span aria-hidden className="text-white/30">🔒</span>}
-                      View Case
-                      <span
-                        aria-hidden
-                        className="inline-block transition-transform duration-200 group-hover:translate-x-1"
-                      >
-                        →
-                      </span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </article>
-          </Link>
+            item={w}
+            dataCard="work"
+            imageAspect="photo"
+            linkClassName="relative snap-start min-w-[86%] sm:min-w-[62%] md:min-w-[500px]"
+          />
         ))}
       </HorizontalCarousel>
 
@@ -388,7 +319,7 @@ function TestimonialsSection() {
   return (
     <section className="mt-14" aria-labelledby="testimonials-heading">
       <h2 id="testimonials-heading" className="text-2xl font-semibold tracking-tight text-white">
-        What collaborators say
+        What people I've worked with say
       </h2>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
@@ -476,16 +407,26 @@ export default function HomeClient() {
   return (
     <div className="min-h-screen text-white">
       <div className="fixed inset-0 z-[-2]" aria-hidden="true">
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_30%_20%,rgba(35,90,255,0.40),transparent_55%),radial-gradient(900px_circle_at_75%_35%,rgba(0,55,180,0.40),transparent_60%),linear-gradient(to_bottom,rgba(4,16,45,0.94),rgba(2,8,24,0.98))]" />
+        {/* Base — deep navy foundation */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(3,9,28,0.97),rgba(1,3,14,1.0))]" />
+        {/* Hero focal glow — concentrated behind headline area */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(18,52,165,0.52),transparent_70%)]" />
+        {/* Left galaxy depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_15%_38%,rgba(25,68,210,0.28),transparent_65%)]" />
+        {/* Right atmospheric layer */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_48%_38%_at_84%_26%,rgba(0,34,145,0.24),transparent_62%)]" />
+        {/* Space image texture */}
         <div
           className={[
             "absolute inset-0 bg-[url('/galaxy/space2.jpg')] bg-cover bg-center",
-            "opacity-[0.24] mix-blend-screen",
+            "opacity-[0.30] mix-blend-screen",
             reducedMotion ? "" : "animate-[bgDrift_26s_ease-in-out_infinite]",
           ].join(" ")}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_50%_35%,rgba(0,0,0,0),rgba(0,0,0,0.28))]" />
-        <div className="absolute inset-0 bg-[rgba(2,8,28,0.62)]" />
+        {/* Edge vignette — pulls attention inward */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_85%_65%_at_50%_35%,transparent_25%,rgba(0,0,0,0.42)_100%)]" />
+        {/* Dark base overlay — reduced from 0.62 to let depth breathe */}
+        <div className="absolute inset-0 bg-[rgba(1,5,20,0.48)]" />
       </div>
 
       <SubtleStars />
@@ -500,7 +441,7 @@ export default function HomeClient() {
             <span className="block text-white">complex systems feel simple.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/90">
-            I work on enterprise platforms, regulated systems, and AI-assisted workflows — where the cost of confusion is high and the margin for ambiguity is low.
+            I design enterprise platforms, regulated products, and AI-assisted workflows — turning complex requirements into experiences people can understand and act on.
           </p>
           <p className="mt-4 text-sm text-white/55">
             Currently designing enterprise tax platform experiences at KPMG Canada.

@@ -18,27 +18,42 @@ function clamp01(v: number) {
   return Math.max(0, Math.min(1, v));
 }
 
-type Star = { x: number; y: number; r: number; a: number; tw: number; seed: number; vx: number; vy: number };
+type StarLayer = 0 | 1 | 2;
+type Star = { x: number; y: number; r: number; a: number; tw: number; seed: number; vx: number; vy: number; layer: StarLayer };
+
+const LAYER_CFG = [
+  { twAmp: 0.05, r: 220, g: 232, b: 255, haloMul: 0,    haloScale: 0   },
+  { twAmp: 0.13, r: 235, g: 245, b: 255, haloMul: 0.12, haloScale: 2.2 },
+  { twAmp: 0.24, r: 248, g: 252, b: 255, haloMul: 0.28, haloScale: 3.2 },
+] as const;
 
 function generateStars(): Star[] {
-  const count = 220;
-  return Array.from({ length: count }, () => {
-    const band = Math.random() < 0.55;
-    const x = Math.random();
-    const y = band
-      ? clamp01(0.45 + (Math.random() - 0.5) * 0.22 + (x - 0.5) * 0.1)
-      : Math.random();
-    return {
-      x,
-      y,
-      r: 0.35 + Math.random() * 0.9,
-      a: 0.12 + Math.random() * 0.26,
-      tw: 0.6 + Math.random() * 1.6,
-      seed: Math.random() * 1000,
-      vx: (Math.random() - 0.5) * 0.006,
-      vy: (Math.random() - 0.5) * 0.004,
-    };
-  });
+  const out: Star[] = [];
+  const add = (
+    count: number, layer: StarLayer,
+    rMin: number, rMax: number,
+    aMin: number, aMax: number,
+    heroWeight: number,
+  ) => {
+    for (let i = 0; i < count; i++) {
+      const bias = Math.random() < heroWeight;
+      out.push({
+        x: bias ? 0.15 + Math.random() * 0.70 : Math.random(),
+        y: bias ? Math.random() * 0.50         : Math.random(),
+        r: rMin + Math.random() * (rMax - rMin),
+        a: aMin + Math.random() * (aMax - aMin),
+        tw: 0.3 + Math.random() * 1.8,
+        seed: Math.random() * 1000,
+        vx: (Math.random() - 0.5) * 0.005,
+        vy: (Math.random() - 0.5) * 0.003,
+        layer,
+      });
+    }
+  };
+  add(300, 0, 0.15, 0.55, 0.06, 0.18, 0.30);
+  add(100, 1, 0.45, 1.10, 0.22, 0.44, 0.35);
+  add(25,  2, 0.90, 2.50, 0.50, 0.82, 0.50);
+  return out;
 }
 
 function SubtleStars() {
@@ -97,7 +112,8 @@ function SubtleStars() {
       ctx.fillRect(0, 0, w, h);
 
       for (const s of stars) {
-        const tw = reducedMotion ? 0 : Math.sin((now / 1000) * s.tw + s.seed) * 0.08;
+        const cfg = LAYER_CFG[s.layer];
+        const tw = reducedMotion ? 0 : Math.sin((now / 1000) * s.tw + s.seed) * cfg.twAmp;
         const alpha = clamp01(s.a + tw);
 
         if (!reducedMotion) {
@@ -112,15 +128,17 @@ function SubtleStars() {
         const x = s.x * w;
         const y = s.y * h;
 
-        ctx.fillStyle = `rgba(235,245,255,${alpha})`;
+        ctx.fillStyle = `rgba(${cfg.r},${cfg.g},${cfg.b},${alpha})`;
         ctx.beginPath();
         ctx.arc(x, y, s.r, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = `rgba(120,185,255,${alpha * 0.1})`;
-        ctx.beginPath();
-        ctx.arc(x, y, s.r * 2.1, 0, Math.PI * 2);
-        ctx.fill();
+        if (cfg.haloMul > 0) {
+          ctx.fillStyle = `rgba(120,185,255,${alpha * cfg.haloMul})`;
+          ctx.beginPath();
+          ctx.arc(x, y, s.r * cfg.haloScale, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       raf = requestAnimationFrame(draw);
@@ -142,16 +160,19 @@ export default function PageBackground() {
   return (
     <>
       <div className="fixed inset-0 z-[-2]" aria-hidden="true">
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_30%_20%,rgba(35,90,255,0.40),transparent_55%),radial-gradient(900px_circle_at_75%_35%,rgba(0,55,180,0.40),transparent_60%),linear-gradient(to_bottom,rgba(4,16,45,0.94),rgba(2,8,24,0.98))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(3,9,28,0.97),rgba(1,3,14,1.0))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(18,52,165,0.52),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_15%_38%,rgba(25,68,210,0.28),transparent_65%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_48%_38%_at_84%_26%,rgba(0,34,145,0.24),transparent_62%)]" />
         <div
           className={[
             "absolute inset-0 bg-[url('/galaxy/space2.jpg')] bg-cover bg-center",
-            "opacity-[0.24] mix-blend-screen",
+            "opacity-[0.30] mix-blend-screen",
             reducedMotion ? "" : "animate-[bgDrift_26s_ease-in-out_infinite]",
           ].join(" ")}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_50%_35%,rgba(0,0,0,0),rgba(0,0,0,0.28))]" />
-        <div className="absolute inset-0 bg-[rgba(2,8,28,0.62)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_85%_65%_at_50%_35%,transparent_25%,rgba(0,0,0,0.42)_100%)]" />
+        <div className="absolute inset-0 bg-[rgba(1,5,20,0.48)]" />
       </div>
       <SubtleStars />
     </>

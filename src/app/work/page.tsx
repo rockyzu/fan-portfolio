@@ -1,31 +1,20 @@
 // src/app/work/page.tsx
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import PageBackground from "@/components/PageBackground";
+import { ProjectCard, type ProjectItem } from "@/components/ProjectCard";
 
-type WorkItem = {
-  number: string;
-  domain: string;
-  title: string;
-  desc: string;
-  href: string;
-  locked: boolean;
-  cover: string;
-  comingSoon?: boolean;
-};
+type WorkItem = ProjectItem;
 
 const items: WorkItem[] = [
   {
     number: "01",
-    domain: "Enterprise Workflow · Tax Platform",
-    title: "Integrating a Specialized Tax Workflow",
-    desc: "Bringing a standalone surplus calculation experience into a unified enterprise tax ecosystem while balancing workflow independence, compliance requirements, and platform consistency.",
-    href: "/work/surplus-calculator",
-    locked: true,
-    cover: "",
-    comingSoon: true,
+    domain: "Enterprise Tax Platform · Selected Work",
+    title: "KPMG — Enterprise Tax Platform Work",
+    desc: "Designing complex workflows and platform experiences across enterprise tax products.",
+    href: "/work/kpmg",
+    cover: "/covers/kpmg.png",
+    ctaLabel: "Explore KPMG work",
   },
   {
     number: "02",
@@ -56,96 +45,6 @@ const items: WorkItem[] = [
   },
 ];
 
-function CoverPlaceholder() {
-  return (
-    <div className="absolute inset-0 bg-[#010b1f]">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.11) 1px, transparent 1px)",
-          backgroundSize: "26px 26px",
-        }}
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_38%_55%,rgba(29,78,216,0.28),transparent_62%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_38%,rgba(0,0,0,0.55))]" />
-    </div>
-  );
-}
-
-function WorkCard({ item }: { item: WorkItem }) {
-  return (
-    <Link
-      href={item.href}
-      prefetch={false}
-      aria-label={item.comingSoon ? `${item.title} — coming soon` : `View project: ${item.title}`}
-      className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30"
-    >
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#02081c]/70 backdrop-blur transition-all duration-400 ease-out hover:-translate-y-1 hover:border-white/[0.14] hover:shadow-[0_24px_64px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.06)]">
-
-        {/* IMAGE */}
-        <div className="relative aspect-[16/9] overflow-hidden">
-          {/* Gradient overlay */}
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-
-          {item.cover ? (
-            <Image
-              src={item.cover}
-              alt={item.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.04] group-hover:brightness-[1.09]"
-            />
-          ) : (
-            <CoverPlaceholder />
-          )}
-        </div>
-
-        {/* CONTENT */}
-        <div className="px-6 pb-6 pt-5">
-          {/* Number + Domain */}
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[11px] text-white/25">{item.number}</span>
-            <span className="text-[11px] text-white/20">/</span>
-            <span className="text-[11px] font-semibold tracking-[0.14em] text-white/40 uppercase">
-              {item.domain}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h3 className="mt-3 text-[17px] font-semibold leading-snug tracking-tight text-white transition-colors duration-200 group-hover:text-white">
-            {item.title}
-          </h3>
-
-          {/* Description */}
-          <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/55">
-            {item.desc}
-          </p>
-
-          {/* CTA */}
-          <div className="mt-5">
-            {item.comingSoon ? (
-              <span className="text-[11px] font-semibold tracking-[0.14em] text-white/35 uppercase">
-                Case Study in Progress
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 text-[13px] text-white/50 transition-colors duration-200 group-hover:text-white/90">
-                {item.locked && <span aria-hidden className="text-white/30">🔒</span>}
-                View Case
-                <span
-                  aria-hidden
-                  className="inline-block transition-transform duration-200 group-hover:translate-x-1"
-                >
-                  →
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
 export default function WorkPage() {
   return (
     <div className="min-h-screen text-white">
@@ -163,7 +62,7 @@ export default function WorkPage() {
 
         <section className="mt-14 grid gap-6 md:grid-cols-2" aria-label="Work projects">
           {items.map((item) => (
-            <WorkCard key={item.href} item={item} />
+            <ProjectCard key={item.href} item={item} />
           ))}
         </section>
 

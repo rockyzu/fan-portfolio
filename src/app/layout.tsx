@@ -72,11 +72,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://fanwang.ca",
   },
-
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
 };
 
 export const viewport: Viewport = {
